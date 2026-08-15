@@ -1,5 +1,6 @@
 {
 	"skillbooksstats:msg-traitlearned": "You feel like you understand {0} now.",
+	"skillbooksstats:tooltip-grants": "Grants: {0}",
 	"skillbooksstats:msg-alreadyknown": "You already know everything this book has to teach.",
 	"skillbooksstats:fallback-title": "A Worn Manual: {0}",
 	"skillbooksstats:fallback-blurb-withdesc": "A hand-copied guide, evidently passed between tradespeople for generations. {0}",

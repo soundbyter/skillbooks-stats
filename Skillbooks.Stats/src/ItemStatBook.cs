@@ -38,6 +38,32 @@ namespace Skillbooks.Stats
             {
                 dsc.AppendLine(blurb);
             }
+            AppendTraitSummary(dsc);
+        }
+
+        /// <summary>
+        /// The flavour text alone never says which trait this actually is or what it does --
+        /// this appends that mechanical info below it.
+        /// </summary>
+        private void AppendTraitSummary(StringBuilder dsc)
+        {
+            string traitCode = TraitCode;
+            if (string.IsNullOrEmpty(traitCode)) { return; }
+
+            dsc.AppendLine();
+            dsc.AppendLine(Lang.Get("skillbooksstats:tooltip-grants", Lang.Get("trait-" + traitCode)));
+
+            string traitDesc = Lang.GetIfExists("traitdesc-" + traitCode);
+            if (!string.IsNullOrEmpty(traitDesc))
+            {
+                dsc.AppendLine(traitDesc);
+            }
+
+            string attrText = TraitAttributeFormatter.Format(Attributes?["skillbooksstats:attributes"]);
+            if (!string.IsNullOrEmpty(attrText))
+            {
+                dsc.AppendLine(attrText);
+            }
         }
 
         public override void OnHeldInteractStart(ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handHandling)

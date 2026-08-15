@@ -64,6 +64,9 @@ namespace Skillbooks.Stats
                 ["skillbooksstats:traitCode"] = traitCode,
                 ["skillbooksstats:title"] = title,
                 ["skillbooksstats:blurb"] = blurb,
+                ["skillbooksstats:attributes"] = discovered.Trait.Attributes is { Count: > 0 }
+                    ? JObject.FromObject(discovered.Trait.Attributes)
+                    : null,
                 ["handbook"] = new JObject { ["exclude"] = true },
             });
 
