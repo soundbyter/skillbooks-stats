@@ -46,12 +46,21 @@ behavior rather than assuming, no speculative abstractions.
 
 ## Mod-supplied flavour overrides
 
-`StatBookFlavour`'s tier 1 (`assets/<moddomain>/skillbooksstats/<traitcode>.json`) is public
-surface other mod authors rely on directly, documented in the [README](README.md#for-mod-authors-supplying-your-own-flavour-text)
--- including the gotcha that this path is only consulted in standalone mode; with core present,
-core's own tier 1 path is what's actually checked instead (see `StatBookRegistry.RegisterBook`).
-Changing either lookup's JSON shape or path is a breaking change under the versioning policy
-below, not a routine refactor.
+`StatBookFlavour`'s tier 1 (`assets/<moddomain>/config/skillbooksstats/<traitcode>.json`) is
+public surface other mod authors rely on directly, documented in the [README](README.md#for-mod-authors-supplying-your-own-flavour-text).
+`StatBookRegistry.ResolveFlavour` checks it explicitly before falling through to
+`ResolveFlavourViaCore` when core is present, specifically so this tier works the same
+regardless of whether core happens to be installed -- don't let a future refactor collapse
+that back into `coreEnabled ? ResolveFlavourViaCore(...) : StatBookFlavour.Resolve(...)`,
+which looks like an equivalent simplification but silently drops this tier whenever core is
+present. Changing this lookup's JSON shape or path is a breaking change under the versioning
+policy below, not a routine refactor.
+
+The `config/` prefix is also load-bearing: `AssetManager.InitAndLoadBaseAssets` (confirmed via
+decompile) only scans the fixed set of `AssetCategory` folder names per domain, so a path
+outside that set is never indexed and `TryGet` silently finds nothing. The original tier 1
+path omitted `config/` and had never actually been exercised end-to-end -- the whole mechanism
+was dead on arrival in both mods until this got caught.
 
 ## Versioning
 

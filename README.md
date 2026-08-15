@@ -38,8 +38,10 @@ itself for the full set of options.
 
 ## For mod authors: supplying your own flavour text
 
-If your mod adds a stat trait, ship a file at `assets/<yourmoddomain>/skillbooksstats/<traitcode>.json`
-in your own mod:
+If your mod adds a stat trait, ship a file at
+`assets/<yourmoddomain>/config/skillbooksstats/<traitcode>.json` in your own mod (note the
+`config/` — Vintage Story's asset system only scans a fixed set of known top-level folders per
+domain, so it has to sit under a recognized one):
 
 ```json
 {
@@ -48,11 +50,8 @@ in your own mod:
 }
 ```
 
-**One thing worth knowing:** when Skillbooks core is also installed, Stats hands flavour
-resolution over to core entirely rather than using its own lookup — which means core's path
-(`assets/<yourmoddomain>/skillbooks/<traitcode>.json`, no `stats`) is what actually gets
-checked in that case, not this one. If you want your override to work reliably whether or not
-core happens to be installed on a given server, ship the same file at *both* paths.
+This is checked first regardless of whether Skillbooks core is also installed — one file
+covers both modes, no need to duplicate it under core's own path.
 
 ## Building from source
 

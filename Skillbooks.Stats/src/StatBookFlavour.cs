@@ -7,10 +7,13 @@ namespace Skillbooks.Stats
 {
     /// <summary>
     /// Self-contained three-tier flavour resolver for standalone mode: mod-supplied
-    /// (assets/&lt;domain&gt;/skillbooksstats/&lt;code&gt;.json), curated
+    /// (assets/&lt;domain&gt;/config/skillbooksstats/&lt;code&gt;.json), curated
     /// (assets/skillbooksstats/config/flavour-curated.json), then a procedural fallback.
-    /// Zero reference to any Skillbooks.* type -- only runs when core is absent; when it's
-    /// present, StatBookRegistry calls into core's resolver instead.
+    /// Zero reference to any Skillbooks.* type -- runs whether or not core is present (see
+    /// StatBookRegistry.ResolveFlavour for why the mod-supplied tier specifically is checked
+    /// in both cases). The mod-supplied path lives under config/, not a bare top-level
+    /// folder -- AssetManager only scans the fixed set of AssetCategory folder names, so
+    /// anything outside that set is never indexed at all, regardless of correct placement.
     /// </summary>
     public static class StatBookFlavour
     {
@@ -35,11 +38,15 @@ namespace Skillbooks.Stats
             return (fallback.Title, fallback.Blurb);
         }
 
-        private static FlavourText TryLoadModSupplied(ICoreServerAPI api, string traitModDomain, string traitCode)
+        /// <summary>
+        /// Public so StatBookRegistry can check this tier on its own, ahead of core's
+        /// resolver when core is present -- see StatBookRegistry.RegisterBook.
+        /// </summary>
+        public static FlavourText TryLoadModSupplied(ICoreServerAPI api, string traitModDomain, string traitCode)
         {
             if (string.IsNullOrEmpty(traitModDomain)) { return null; }
 
-            AssetLocation loc = new AssetLocation(traitModDomain, "skillbooksstats/" + traitCode + ".json");
+            AssetLocation loc = new AssetLocation(traitModDomain, "config/skillbooksstats/" + traitCode + ".json");
             IAsset asset = api.Assets.TryGet(loc);
             return asset?.ToObject<FlavourText>();
         }

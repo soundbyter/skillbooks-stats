@@ -50,9 +50,7 @@ namespace Skillbooks.Stats
 
         private static void RegisterBook(ICoreServerAPI api, string traitCode, DiscoveredStatTrait discovered, string tint, bool coreEnabled)
         {
-            (string title, string blurb) = coreEnabled
-                ? ResolveFlavourViaCore(api, traitCode, discovered)
-                : StatBookFlavour.Resolve(api, traitCode, discovered.SourceDomain);
+            (string title, string blurb) = ResolveFlavour(api, traitCode, discovered, coreEnabled);
 
             Item item = api.ClassRegistry.CreateItem("ItemStatBook");
             item.Code = new AssetLocation("skillbooksstats", "statbook-" + traitCode);
@@ -92,6 +90,33 @@ namespace Skillbooks.Stats
             };
 
             api.RegisterItem(item);
+        }
+
+        /// <summary>
+        /// StatBookFlavour.Resolve (the standalone path) already checks Stats' own
+        /// skillbooksstats/ override as its first tier. ResolveFlavourViaCore does not -- it
+        /// hands off to core's resolver entirely, which only knows about core's own
+        /// skillbooks/ path. So with core present, this checks skillbooksstats/ explicitly
+        /// first and only falls through to core's resolver for whatever it doesn't cover,
+        /// rather than skipping Stats' own override tier just because core happens to be
+        /// installed.
+        /// </summary>
+        private static (string title, string blurb) ResolveFlavour(ICoreServerAPI api, string traitCode, DiscoveredStatTrait discovered, bool coreEnabled)
+        {
+            if (!coreEnabled)
+            {
+                return StatBookFlavour.Resolve(api, traitCode, discovered.SourceDomain);
+            }
+
+            (string title, string blurb) viaCore = ResolveFlavourViaCore(api, traitCode, discovered);
+
+            StatBookFlavour.FlavourText ownOverride = StatBookFlavour.TryLoadModSupplied(api, discovered.SourceDomain, traitCode);
+            if (ownOverride == null) { return viaCore; }
+
+            return (
+                string.IsNullOrEmpty(ownOverride.Title) ? viaCore.title : ownOverride.Title,
+                string.IsNullOrEmpty(ownOverride.Blurb) ? viaCore.blurb : ownOverride.Blurb
+            );
         }
 
         /// <summary>
