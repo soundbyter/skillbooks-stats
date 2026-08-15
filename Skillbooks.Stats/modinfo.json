@@ -7,6 +7,7 @@
     ],
     "description": "Lore-styled, single-use books that permanently grant a stat-modifying trait when read. Discovers traits with non-empty attributes dynamically at server start, generating a book for each one automatically -- including traits added by other mods. Works standalone; shares trait registry, flavour resolution, and the book item itself with Skillbooks core when it's also installed, without requiring it.",
     "version": "0.3.0",
+    "website": "https://mods.vintagestory.at/show/mod/64135",
     "iconPath": "modicon.png",
     "dependencies": {
         "game": ""

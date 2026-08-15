@@ -26,10 +26,12 @@ neither ever forces the other to exist.
 
 ## Installation
 
-Grab the latest release from the [Releases page](https://github.com/soundbyter/skillbooks-stats/releases)
-and drop the zip into your Vintage Story `Mods` folder (or extract it there). No other mod
-required — install [Skillbooks core](https://github.com/soundbyter/skillbooks-core) alongside
-it too if you also want crafting-trait books.
+Get it from the [Vintage Story ModDB](https://mods.vintagestory.at/show/mod/64135) (installable
+directly through the in-game mod browser), or grab the zip from the
+[Releases page](https://github.com/soundbyter/skillbooks-stats/releases) here and drop it into
+your Vintage Story `Mods` folder. No other mod required — install
+[Skillbooks core](https://mods.vintagestory.at/show/mod/64127) alongside it too if you also want
+crafting-trait books.
 
 ## Configuration
 
