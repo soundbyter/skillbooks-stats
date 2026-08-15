@@ -36,6 +36,24 @@ it too if you also want crafting-trait books.
 A config file is generated on first run at `ModConfig/skillbooksstats.json`. See the file
 itself for the full set of options.
 
+## For mod authors: supplying your own flavour text
+
+If your mod adds a stat trait, ship a file at `assets/<yourmoddomain>/skillbooksstats/<traitcode>.json`
+in your own mod:
+
+```json
+{
+  "title": "Your Book's Title",
+  "blurb": "The in-world description shown when the book is read or inspected."
+}
+```
+
+**One thing worth knowing:** when Skillbooks core is also installed, Stats hands flavour
+resolution over to core entirely rather than using its own lookup — which means core's path
+(`assets/<yourmoddomain>/skillbooks/<traitcode>.json`, no `stats`) is what actually gets
+checked in that case, not this one. If you want your override to work reliably whether or not
+core happens to be installed on a given server, ship the same file at *both* paths.
+
 ## Building from source
 
 Requires the .NET SDK matching Vintage Story's target framework, a local Vintage Story install

@@ -44,6 +44,15 @@ Same conventions as [core](https://github.com/soundbyter/skillbooks-core/blob/ma
 comments only where the *why* is genuinely non-obvious, decompile-verify claims about engine
 behavior rather than assuming, no speculative abstractions.
 
+## Mod-supplied flavour overrides
+
+`StatBookFlavour`'s tier 1 (`assets/<moddomain>/skillbooksstats/<traitcode>.json`) is public
+surface other mod authors rely on directly, documented in the [README](README.md#for-mod-authors-supplying-your-own-flavour-text)
+-- including the gotcha that this path is only consulted in standalone mode; with core present,
+core's own tier 1 path is what's actually checked instead (see `StatBookRegistry.RegisterBook`).
+Changing either lookup's JSON shape or path is a breaking change under the versioning policy
+below, not a routine refactor.
+
 ## Versioning
 
 Same [semver](https://semver.org/) policy as core. The one thing specific to this repo:
