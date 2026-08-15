@@ -1,0 +1,8 @@
+{
+	"skillbooksstats:msg-traitlearned": "You feel like you understand {0} now.",
+	"skillbooksstats:msg-alreadyknown": "You already know everything this book has to teach.",
+	"skillbooksstats:fallback-title": "A Worn Manual: {0}",
+	"skillbooksstats:fallback-blurb-withdesc": "A hand-copied guide, evidently passed between tradespeople for generations. {0}",
+	"skillbooksstats:fallback-blurb-nodesc": "A hand-copied guide, evidently passed between tradespeople for generations. Its knowledge is plain but sound.",
+	"game:tabname-skillbooksstats": "Skill Books: Stats"
+}
