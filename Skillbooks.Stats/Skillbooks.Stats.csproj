@@ -38,7 +38,7 @@
          Stats' own build output, since core ships (and gets loaded) as its own separate
          mod when present; embedding a copy would risk two different versions of
          SkillBooksModSystem loaded side by side. -->
-    <PackageReference Include="Skillbooks.Core" Version="0.2.0">
+    <PackageReference Include="Skillbooks.Core" Version="0.2.1">
       <Private>false</Private>
     </PackageReference>
   </ItemGroup>
