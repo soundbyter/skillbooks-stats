@@ -1,55 +1,42 @@
-<p style="text-align: center;">
-  <img src="https://raw.githubusercontent.com/soundbyter/skillbooks-stats/main/docs/images/logo.png" alt="Skillbooks: Stats" width="280" />
-</p>
-
-<p>Skillbooks: Stats does for stat-modifying traits what <a href="https://mods.vintagestory.at/show/mod/64127" target="_blank" rel="noopener">Skillbooks</a> does for crafting traits: every trait that grants a stat bonus &mdash; walkspeed, damage, drop rates, and so on &mdash; gets its own lore-styled book, generated automatically when the server starts. Read one, and you permanently learn the trait it teaches.</p>
-
-<p><strong>Works entirely on its own.</strong> Skillbooks core is not required. If it's also installed, Stats detects it automatically and shares its trait registry and flavour text instead of duplicating anything &mdash; but neither mod ever forces the other to exist.</p>
-
+<p style="text-align: center;"><img src="https://raw.githubusercontent.com/soundbyter/skillbooks-stats/main/docs/images/logo.png" alt="Skillbooks: Stats" width="280" /></p>
+<h1>Skillbooks: Stats</h1>
+<p>Skillbooks: Stats does for stat-modifying traits what <a href="https://mods.vintagestory.at/show/mod/64127" target="_blank" rel="noopener">Skillbooks Core</a> does for crafting traits: every trait that grants a stat bonus - walkspeed, damage, drop rates, and so on - gets its own lore-styled book, generated automatically when the server starts. Reading one permanently grants the trait it teaches.</p>
+<p><strong>Works entirely on its own.</strong> Skillbooks core is not required. If it's also installed, Stats detects it automatically and shares its trait registry and flavour text instead of duplicating anything, but neither mod ever forces the other to exist.</p>
 <h2>How it works</h2>
-<p>At server start, Skillbooks: Stats scans every trait your mods define for a non-empty stat-modifier block and generates a book for each one it finds &mdash; including traits added by other class mods. Install a new class mod, restart the server, and its stat traits already have books waiting to be found &mdash; nothing to configure, nothing to wait on an update for.</p>
-
-<p style="text-align: center;">
-  <img src="https://raw.githubusercontent.com/soundbyter/skillbooks-stats/main/docs/images/tooltip-preview.png" alt="A Skillbooks: Stats book's in-game tooltip, showing the trait it grants and its exact effects" />
-</p>
-
+<p>At server start, Skillbooks: Stats scans every trait your mods define for a non-empty stat-modifier block and generates a book for each one it finds, including traits added by other class mods. Install a new class mod, restart the server, and its stat traits already have books waiting to be found.</p>
+<p style="text-align: center;"><img src="https://raw.githubusercontent.com/soundbyter/skillbooks-stats/main/docs/images/tooltip-preview.png" alt="A Skillbooks: Stats book's in-game tooltip, showing the trait it grants and its exact effects" /></p>
 <h2>Features</h2>
 <ul>
-  <li><strong>Dynamic discovery.</strong> No per-trait setup. New stat traits from other mods pick up books automatically.</li>
-  <li><strong>Curated flavour text</strong> for every supported trait, whether or not core is installed.</li>
-  <li><strong>Tooltips show exactly what you're getting</strong> &mdash; which trait, and its precise stat effects &mdash; not just flavour text.</li>
-  <li><strong>Negative traits excluded by default</strong> (configurable). Reading a book is framed as a reward, so a pure downside showing up in that pool would be a mismatch most players won't expect. Mixed traits (tradeoffs, not pure downsides) stay included either way.</li>
-  <li><strong>Vessel loot and trader offers</strong>, each independently configurable.</li>
+<li><strong>Dynamic discovery.</strong> No per-trait setup. New stat traits from other mods pick up books automatically.</li>
+<li><strong>Curated flavour text</strong>&nbsp;for every supported trait, whether or not core is installed.</li>
+<li><strong>Tooltips show exactly what you're getting.</strong> which trait, and its precise stat effects.</li>
+<li><strong>Negative traits excluded by default</strong>&nbsp;(configurable). Reading a book is framed as a reward, so a pure downside showing up in that pool would be a mismatch most players won't expect. Mixed traits (tradeoffs, not pure downsides) stay included either way.</li>
+<li><strong>Vessel loot and trader offers</strong>, each independently configurable.</li>
 </ul>
-
 <h2>Traits with curated flavour</h2>
 <p>Every vanilla stat trait, plus every stat trait from these class mods, has hand-written flavour text rather than the procedural fallback:</p>
 <ul>
-  <li>Vanilla &mdash; 11 traits</li>
-  <li>Aldi's Classes &mdash; 59 traits</li>
-  <li>Rustbound Magic &mdash; 4 traits</li>
+<li><strong>Vanilla</strong> (11 traits)</li>
+<li><strong>Aldi's Classes</strong>&nbsp;(59 traits)</li>
+<li><strong>Rustbound Magic</strong> (4 traits)</li>
 </ul>
-<p>A trait from any other installed mod still gets a book automatically (see "How it works" above) &mdash; just with a plainer procedural description until flavour's written for it, either here or by the mod's own author (see "Making a class mod?" below).</p>
-
+<p>A trait from any other installed mod still gets a book automatically (see "How it works" above), just with a plainer procedural description until flavour's written for it either here or by the mod's own author (see "Making a class mod?" below).</p>
 <h2>Configuration</h2>
 <p>A config file is generated on first run with control over:</p>
 <ul>
-  <li>Loot spawn chance and which block codes can drop a book</li>
-  <li>Trader spawn chance, which trader types offer books, and their price</li>
-  <li>An allowlist or blacklist to include or exclude specific traits</li>
-  <li>Whether negative-typed traits are included</li>
+<li>Loot spawn chance and which block codes can drop a book</li>
+<li>Trader spawn chance, which trader types offer books, and their price</li>
+<li>An allowlist or blacklist to include or exclude specific traits</li>
+<li>Whether negative-typed traits are included</li>
 </ul>
-
 <h2>Making a class mod?</h2>
 <p>Stats discovers your stat traits automatically, but if you'd rather write your own flavour text for your own trait's book instead of using the procedural fallback, just ship a file at <code>assets/&lt;yourmoddomain&gt;/config/skillbooksstats/&lt;traitcode&gt;.json</code> in your own mod:</p>
 <pre><code>{
   "title": "Your Book's Title",
   "blurb": "The in-world description shown when the book is read or inspected."
 }</code></pre>
-<p>That one file takes priority over the curated list and works the same whether or not Skillbooks core happens to be installed on a given server &mdash; no need to coordinate with this repo, and no need to duplicate the file anywhere else.</p>
-
+<p>That one file takes priority over the curated list and works the same whether or not Skillbooks core happens to be installed on a given server; no need to coordinate with this repo, and no need to duplicate the file anywhere else.</p>
 <h2>Part of a family</h2>
-<p>Stats is the standalone addon to <a href="https://mods.vintagestory.at/show/mod/64127" target="_blank" rel="noopener">Skillbooks</a>, which does the same thing for crafting traits. Install either on its own, or both together for the full set &mdash; installing both doesn't duplicate any trait registry or flavour text between them.</p>
-
+<p>Stats is the standalone addon to <a href="https://mods.vintagestory.at/show/mod/64127" target="_blank" rel="noopener">Skillbooks Core</a>, which does the same thing for crafting traits. Install either on its own, or both together for the full set.</p>
 <h2>Open source</h2>
-<p>Skillbooks: Stats is developed in the open under the GPL-3.0 license. Source, issue tracker, and releases are all on <a href="https://github.com/soundbyter/skillbooks-stats" target="_blank" rel="noopener">GitHub</a>. Bug reports, feature requests, and pull requests are welcome &mdash; see <a href="https://github.com/soundbyter/skillbooks-stats/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">CONTRIBUTING.md</a> to get started.</p>
+<p>Skillbooks: Stats is developed in the open under the GPL-3.0 license. Source, issue tracker, and releases are all on <a href="https://github.com/soundbyter/skillbooks-stats" target="_blank" rel="noopener">GitHub</a>. Bug reports, feature requests, and pull requests are welcome, see <a href="https://github.com/soundbyter/skillbooks-stats/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">CONTRIBUTING.md</a> to get started.</p>
