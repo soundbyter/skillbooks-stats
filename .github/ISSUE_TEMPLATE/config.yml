@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Contributing guide
+    url: https://github.com/soundbyter/skillbooks-stats/blob/main/CONTRIBUTING.md
+    about: Read this before opening a PR -- setup, the JIT-safety rule, code style, versioning.
+  - name: Security vulnerability
+    url: https://github.com/soundbyter/skillbooks-stats/security/advisories/new
+    about: Report security issues privately here, not as a public issue.
