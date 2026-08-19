@@ -5,5 +5,7 @@
 	"skillbooksstats:fallback-title": "A Worn Manual: {0}",
 	"skillbooksstats:fallback-blurb-withdesc": "A hand-copied guide, evidently passed between tradespeople for generations. {0}",
 	"skillbooksstats:fallback-blurb-nodesc": "A hand-copied guide, evidently passed between tradespeople for generations. Its knowledge is plain but sound.",
-	"game:tabname-skillbooksstats": "Skill Books: Stats"
+	"game:tabname-skillbooksstats": "Skill Books: Stats",
+	"skillbooksstats:learnedtraits-title": "Learned Traits",
+	"skillbooksstats:learnedtraits-empty": "You haven't learned any traits yet."
 }

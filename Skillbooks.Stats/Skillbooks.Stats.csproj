@@ -40,6 +40,7 @@
          SkillBooksModSystem loaded side by side. -->
     <PackageReference Include="Skillbooks.Core" Version="0.3.1">
       <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
 
