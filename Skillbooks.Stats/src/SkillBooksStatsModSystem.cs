@@ -27,6 +27,7 @@ namespace Skillbooks.Stats
             StatBookRegistry.Generate(sapi, statTraits, coreEnabled);
             StatBookMarketPatcher.RegisterLootHook(sapi, statTraits, config);
             StatBookMarketPatcher.RegisterTraderHook(sapi, statTraits, config);
+            StatBookCharSelPatcher.Register(sapi, config);
 
             if (coreEnabled)
             {

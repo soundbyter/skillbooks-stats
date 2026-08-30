@@ -144,7 +144,11 @@ namespace Skillbooks.Stats
             byEntity.WatchedAttributes.MarkPathDirty("skillbooksLearnedTraits");
         }
 
-        private static void RefreshTraitStats(ICoreAPI api, EntityAgent byEntity)
+        /// <summary>
+        /// Internal rather than private: StatBookCharSelPatcher reuses this after restoring
+        /// extraTraits post-charsel, same need for the same reason.
+        /// </summary>
+        internal static void RefreshTraitStats(ICoreAPI api, EntityAgent byEntity)
         {
             if (byEntity is not EntityPlayer entityPlayer) { return; }
             string currentClassCode = byEntity.WatchedAttributes.GetString("characterClass");

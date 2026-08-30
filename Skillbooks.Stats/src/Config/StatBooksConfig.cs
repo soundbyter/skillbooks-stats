@@ -38,6 +38,17 @@ namespace Skillbooks.Stats.Config
         /// </summary>
         public int TraderBasePrice = 24;
 
+        /// <summary>
+        /// The admin "charsel" command effectively starts a new character, which resets
+        /// extraTraits down to whatever the freshly (re)selected class provides on its own --
+        /// silently dropping any trait bonuses previously earned by reading a book. Default
+        /// true: those bonuses are meant to be a permanent character upgrade, and losing them
+        /// to an admin-gated command feels like an accidental side effect rather than intent.
+        /// Set false to let charsel wipe them like a true fresh start. Ignored (deferring to
+        /// core's own setting) when core is also installed -- see StatBookCharSelPatcher.
+        /// </summary>
+        public bool KeepTraitsOnCharSel = true;
+
         private const string FileName = "skillbooksstats.json";
 
         public static StatBooksConfig Load(ICoreServerAPI api)

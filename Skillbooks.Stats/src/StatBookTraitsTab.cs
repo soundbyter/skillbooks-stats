@@ -17,9 +17,17 @@ namespace Skillbooks.Stats
     /// CharacterSystem itself adds the "Traits" tab). Self-contained sibling rather than a
     /// shared class, matching how the rest of Stats stays standalone-capable. Skipped
     /// entirely when core is loaded -- core's own tab already covers traits from both mods,
-    /// since they share the same "skillbooksLearnedTraits" watched attribute (see
-    /// ItemStatBook.RecordLearnedTrait -- not "extraTraits" itself, which is a generic
-    /// vanilla extension point other mods write to as well, e.g. race selection).
+    /// since they share the same "skillbooksLearnedTraits" watched attribute.
+    ///
+    /// Lists the intersection of "skillbooksLearnedTraits" (every code ever granted by a
+    /// book, see ItemStatBook.RecordLearnedTrait) and "extraTraits" (whichever of those are
+    /// currently active for this character). Neither list alone is enough: extraTraits is a
+    /// generic vanilla extension point other mods write to as well (race selection, for
+    /// one), so it can't double as "traits granted by a stat book" on its own; and
+    /// skillbooksLearnedTraits never shrinks, so on its own it would keep showing traits
+    /// from a previous character after a charsel (the "charsel" admin command effectively
+    /// starts a new character and drops extraTraits down to whatever the new character
+    /// actually has, but doesn't touch our own separate history of what was ever learned).
     ///
     /// Coexistence with other tab-adding mods: see core's SkillBookTraitsTab class remarks
     /// -- safe against any mod that computes its own DataInt from live list state, not
@@ -117,7 +125,9 @@ namespace Skillbooks.Stats
         /// </summary>
         private string BuildText()
         {
-            string[] learnedCodes = capi.World.Player.Entity.WatchedAttributes.GetStringArray("skillbooksLearnedTraits", Array.Empty<string>());
+            HashSet<string> everLearned = new HashSet<string>(capi.World.Player.Entity.WatchedAttributes.GetStringArray("skillbooksLearnedTraits", Array.Empty<string>()));
+            string[] currentlyActive = capi.World.Player.Entity.WatchedAttributes.GetStringArray("extraTraits", Array.Empty<string>());
+            string[] learnedCodes = Array.FindAll(currentlyActive, everLearned.Contains);
             if (learnedCodes.Length == 0) { return Lang.Get("skillbooksstats:learnedtraits-empty"); }
 
             Dictionary<string, Dictionary<string, double>> attributesByCode = LoadTraitAttributes(capi);
