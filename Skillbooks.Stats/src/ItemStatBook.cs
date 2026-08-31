@@ -19,6 +19,16 @@ namespace Skillbooks.Stats
     /// </summary>
     public class ItemStatBook : Item
     {
+        /// <summary>
+        /// Namespaced class-registration key, same reasoning as core's ItemSkillBook.ClassName
+        /// -- ClassRegistry.RegisterItemClass/CreateItem share one flat global
+        /// Dictionary&lt;string, Type&gt; with no collision protection (confirmed via decompile:
+        /// RegisterItemClass is just `ItemClassToTypeMapping[itemClass] = item;`). Not a
+        /// confirmed collision like core's "ItemSkillBook" was against XLib, but "ItemStatBook"
+        /// is just as generic a name, so it gets the same defensive treatment.
+        /// </summary>
+        public const string ClassName = "SkillbooksStatsItemStatBook";
+
         private const float SecondsToRead = 2f;
 
         private IProgressBar progressBar;

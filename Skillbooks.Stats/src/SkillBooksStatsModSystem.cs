@@ -10,7 +10,7 @@ namespace Skillbooks.Stats
         public override void Start(ICoreAPI api)
         {
             base.Start(api);
-            api.RegisterItemClass("ItemStatBook", typeof(ItemStatBook));
+            api.RegisterItemClass(ItemStatBook.ClassName, typeof(ItemStatBook));
         }
 
         public override void AssetsFinalize(ICoreAPI api)

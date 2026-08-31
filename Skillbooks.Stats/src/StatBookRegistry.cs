@@ -52,7 +52,7 @@ namespace Skillbooks.Stats
         {
             (string title, string blurb) = ResolveFlavour(api, traitCode, discovered, coreEnabled);
 
-            Item item = api.ClassRegistry.CreateItem("ItemStatBook");
+            Item item = api.ClassRegistry.CreateItem(ItemStatBook.ClassName);
             item.Code = new AssetLocation("skillbooksstats", "statbook-" + traitCode);
             item.MaxStackSize = 16;
             item.Shape = new CompositeShape { Base = SharedShape };
