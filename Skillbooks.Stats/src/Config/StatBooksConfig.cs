@@ -3,8 +3,7 @@ using Vintagestory.API.Server;
 namespace Skillbooks.Stats.Config
 {
     /// <summary>
-    /// Mirrors the parts of core's SkillBooksConfig that Stats also needs. Salvage and reroll
-    /// are still core-only.
+    /// Mirrors the parts of core's SkillBooksConfig that Stats also needs.
     /// </summary>
     public class StatBooksConfig
     {
@@ -37,6 +36,17 @@ namespace Skillbooks.Stats.Config
         /// variance. Matches core's own TraderBasePrice for consistency between the two mods.
         /// </summary>
         public int TraderBasePrice = 24;
+
+        public bool SalvageEnabled = true;
+        public int SalvageLeatherAmount = 2;
+
+        /// <summary>If true, only illegible/orphaned books can be salvaged.</summary>
+        public bool SalvageIllegibleOnly = false;
+
+        public bool RerollEnabled = true;
+
+        /// <summary>If true, only illegible/orphaned books can be rerolled.</summary>
+        public bool RerollIllegibleOnly = false;
 
         /// <summary>
         /// The admin "charsel" command effectively starts a new character, which resets

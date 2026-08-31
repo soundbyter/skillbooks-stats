@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using Skillbooks.Stats.Config;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -13,6 +14,12 @@ namespace Skillbooks.Stats
     /// core's SkillBookRegistry. Reuses core's flavour resolver when core is present (see
     /// CONTRIBUTING.md for why that call must stay isolated in its own method), falling back
     /// to StatBookFlavour's own self-contained resolver otherwise.
+    ///
+    /// Also registers a fallback "illegible" item for every trait in knownTraitCodes whose
+    /// providing mod is no longer loaded -- otherwise an existing itemstack for it would
+    /// collapse into the engine's generic "unknown item" placeholder. Same ItemStatBook class
+    /// either way; the "skillbooksstats:illegible" attribute set here picks the mode. Mirrors
+    /// core's SkillBookRegistry.
     /// </summary>
     public static class StatBookRegistry
     {
@@ -28,7 +35,11 @@ namespace Skillbooks.Stats
             "normal-slateblue", "normal-teal",
         };
 
-        public static void Generate(ICoreServerAPI api, Dictionary<string, DiscoveredStatTrait> statTraits, bool coreEnabled)
+        // Deliberately not in TintPool -- illegible books get their own distinct, worn look
+        // rather than reusing a normal tint for aesthetics and for clarity at a glance.
+        private const string IllegibleTexturePath = "item/lore/book-rotten1";
+
+        public static void Generate(ICoreServerAPI api, Dictionary<string, DiscoveredStatTrait> statTraits, IEnumerable<string> knownTraitCodes, StatBooksConfig config, bool coreEnabled)
         {
             int i = 0;
             int registered = 0;
@@ -46,19 +57,36 @@ namespace Skillbooks.Stats
                 i++;
             }
             api.Logger.Event($"[Skillbooks: Stats] Registered {registered} of {statTraits.Count} stat book item(s)");
+
+            int orphanedTotal = 0;
+            int orphanedRegistered = 0;
+            foreach (string traitCode in knownTraitCodes)
+            {
+                if (statTraits.ContainsKey(traitCode)) { continue; }
+                // A blacklisted/not-allowlisted trait is a deliberate exclusion, not an orphan.
+                if (!config.IsTraitEnabled(traitCode)) { continue; }
+                orphanedTotal++;
+                try
+                {
+                    RegisterIllegibleBook(api, traitCode);
+                    orphanedRegistered++;
+                }
+                catch (System.Exception ex)
+                {
+                    api.Logger.Error($"[Skillbooks: Stats] Failed to register illegible stat book for orphaned trait '{traitCode}': {ex.Message}");
+                }
+            }
+            if (orphanedTotal > 0)
+            {
+                api.Logger.Event($"[Skillbooks: Stats] Registered {orphanedRegistered} of {orphanedTotal} illegible stat book(s) for orphaned trait(s) (providing mod no longer loaded)");
+            }
         }
 
         private static void RegisterBook(ICoreServerAPI api, string traitCode, DiscoveredStatTrait discovered, string tint, bool coreEnabled)
         {
             (string title, string blurb) = ResolveFlavour(api, traitCode, discovered, coreEnabled);
 
-            Item item = api.ClassRegistry.CreateItem(ItemStatBook.ClassName);
-            item.Code = new AssetLocation("skillbooksstats", "statbook-" + traitCode);
-            item.MaxStackSize = 16;
-            item.Shape = new CompositeShape { Base = SharedShape };
-            item.Textures["cover"] = new CompositeTexture(new AssetLocation("game", "item/lore/" + tint));
-            item.CreativeInventoryTabs = new[] { "skillbooksstats" };
-
+            Item item = BuildBaseItem(api, traitCode, "item/lore/" + tint);
             item.Attributes = new JsonObject(new JObject
             {
                 ["skillbooksstats:traitCode"] = traitCode,
@@ -69,6 +97,31 @@ namespace Skillbooks.Stats
                     : null,
                 ["handbook"] = new JObject { ["exclude"] = true },
             });
+
+            api.RegisterItem(item);
+        }
+
+        private static void RegisterIllegibleBook(ICoreServerAPI api, string traitCode)
+        {
+            Item item = BuildBaseItem(api, traitCode, IllegibleTexturePath);
+            item.Attributes = new JsonObject(new JObject
+            {
+                ["skillbooksstats:traitCode"] = traitCode,
+                ["skillbooksstats:illegible"] = true,
+                ["handbook"] = new JObject { ["exclude"] = true },
+            });
+
+            api.RegisterItem(item);
+        }
+
+        private static Item BuildBaseItem(ICoreServerAPI api, string traitCode, string texturePath)
+        {
+            Item item = api.ClassRegistry.CreateItem(ItemStatBook.ClassName);
+            item.Code = new AssetLocation("skillbooksstats", "statbook-" + traitCode);
+            item.MaxStackSize = 16;
+            item.Shape = new CompositeShape { Base = SharedShape };
+            item.Textures["cover"] = new CompositeTexture(new AssetLocation("game", texturePath));
+            item.CreativeInventoryTabs = new[] { "skillbooksstats" };
 
             item.GuiTransform = new ModelTransform
             {
@@ -92,7 +145,7 @@ namespace Skillbooks.Stats
                 Scale = 3.4f,
             };
 
-            api.RegisterItem(item);
+            return item;
         }
 
         /// <summary>
