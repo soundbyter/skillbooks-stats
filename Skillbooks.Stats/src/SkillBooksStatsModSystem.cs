@@ -37,6 +37,7 @@ namespace Skillbooks.Stats
             StatBookMarketPatcher.RegisterTraderHook(sapi, statTraits, config);
             StatBookCharSelPatcher.Register(sapi, config);
             StatSalvageRecipe.Register(sapi, config);
+            if (!coreEnabled) { StatBookCommands.Register(sapi); }
 
             if (coreEnabled)
             {

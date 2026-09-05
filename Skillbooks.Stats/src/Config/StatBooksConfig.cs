@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Vintagestory.API.Server;
 
 namespace Skillbooks.Stats.Config
@@ -47,6 +48,30 @@ namespace Skillbooks.Stats.Config
 
         /// <summary>If true, only illegible/orphaned books can be rerolled.</summary>
         public bool RerollIllegibleOnly = false;
+
+        /// <summary>
+        /// Stat books are shown in the handbook (alongside other items) by default. Set true
+        /// to hide them again, keeping which traits have books a surprise until found in-world.
+        /// </summary>
+        public bool HideFromHandbook = false;
+
+        /// <summary>
+        /// Player-authored flavour text, keyed by trait code. Takes priority over everything
+        /// else -- a mod-supplied override (see StatBookFlavour), the curated list, and the
+        /// procedural fallback. Either field can be left null/omitted and falls back to
+        /// whatever the next tier provides. Ignored (deferring to core's own skillbooks.json
+        /// FlavourOverrides instead) when core is also installed -- see
+        /// StatBookRegistry.ResolveFlavourWithOverride -- so there's one config file to manage
+        /// overrides in rather than two that could quietly drift apart. Only takes effect in
+        /// standalone mode.
+        /// </summary>
+        public Dictionary<string, FlavourOverride> FlavourOverrides = new Dictionary<string, FlavourOverride>();
+
+        public class FlavourOverride
+        {
+            public string Title;
+            public string Blurb;
+        }
 
         /// <summary>
         /// The admin "charsel" command effectively starts a new character, which resets

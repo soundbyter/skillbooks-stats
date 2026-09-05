@@ -1,6 +1,9 @@
 {
 	"skillbooksstats:msg-traitlearned": "You feel like you understand {0} now.",
 	"skillbooksstats:tooltip-grants": "Grants: {0}",
+	"skillbooksstats:tooltip-source": "Source: {0}",
+	"skillbooksstats:tooltip-series": "A Skillbooks: Stats book.",
+	"skillbooksstats:source-vanilla": "Vintage Story",
 	"skillbooksstats:msg-alreadyknown": "You already know everything this book has to teach.",
 	"skillbooksstats:msg-rerolled": "The pages shimmer and change before your eyes.",
 	"skillbooksstats:msg-illegible": "You feel something used to be here, but you can't make out the words.",
@@ -13,5 +16,13 @@
 	"skillbooksstats:handbook-title": "Skillbooks: Stats",
 	"skillbooksstats:learnedtraits-title": "Learned Traits",
 	"skillbooksstats:learnedtraits-empty": "You haven't learned any traits yet.",
+	"skillbooksstats:cmd-no-entity": "No player entity found.",
+	"skillbooksstats:cmd-insufficient-role": "Sorry, your role's privilege level is too low to use this command.",
+	"skillbooksstats:cmd-player-not-found": "No online player named '{0}' found.",
+	"skillbooksstats:cmd-cleared-self": "Cleared {0} learned stat book trait(s). You can learn them again from a book.",
+	"skillbooksstats:cmd-cleared-other": "Cleared {0} learned stat book trait(s) from {1}.",
+	"skillbooksstats:cmd-cleared-none": "You haven't learned any stat book traits.",
+	"skillbooksstats:cmd-cleared-none-other": "{0} hasn't learned any stat book traits.",
+	"skillbooksstats:cmd-cleared-all": "Cleared {0} learned stat book trait(s) across {1} online player(s).",
 	"skillbooksstats:handbook-text": "Just like crafting knowledge, an aptitude for endurance, speed, or any other trait of the body can be found rather than earned the hard way. These \"stat books\" work the same as their crafting-trait cousins: read one to permanently pick up whatever trait it holds.\n\nA book that no longer holds any interest can be salvaged for its leather binding with a simple knife. Alternatively, if a book's particular knowledge isn't what you were hoping for, hold it alongside a temporal gear in your other hand and read as normal -- the gear unravels and reweaves it into an entirely different stat book, though what knowledge you'll uncover next is left to chance."
 }

@@ -47,7 +47,7 @@ namespace Skillbooks.Stats
             {
                 try
                 {
-                    RegisterBook(api, entry.Key, entry.Value, TintPool[i % TintPool.Length], coreEnabled);
+                    RegisterBook(api, entry.Key, entry.Value, TintPool[i % TintPool.Length], config, coreEnabled);
                     registered++;
                 }
                 catch (System.Exception ex)
@@ -68,7 +68,7 @@ namespace Skillbooks.Stats
                 orphanedTotal++;
                 try
                 {
-                    RegisterIllegibleBook(api, traitCode);
+                    RegisterIllegibleBook(api, traitCode, config);
                     orphanedRegistered++;
                 }
                 catch (System.Exception ex)
@@ -82,12 +82,12 @@ namespace Skillbooks.Stats
             }
         }
 
-        private static void RegisterBook(ICoreServerAPI api, string traitCode, DiscoveredStatTrait discovered, string tint, bool coreEnabled)
+        private static void RegisterBook(ICoreServerAPI api, string traitCode, DiscoveredStatTrait discovered, string tint, StatBooksConfig config, bool coreEnabled)
         {
-            (string title, string blurb) = ResolveFlavour(api, traitCode, discovered, coreEnabled);
+            (string title, string blurb) = ResolveFlavourWithOverride(api, traitCode, discovered, config, coreEnabled);
 
             Item item = BuildBaseItem(api, traitCode, "item/lore/" + tint);
-            item.Attributes = new JsonObject(new JObject
+            JObject attributes = new JObject
             {
                 ["skillbooksstats:traitCode"] = traitCode,
                 ["skillbooksstats:title"] = title,
@@ -95,21 +95,24 @@ namespace Skillbooks.Stats
                 ["skillbooksstats:attributes"] = discovered.Trait.Attributes is { Count: > 0 }
                     ? JObject.FromObject(discovered.Trait.Attributes)
                     : null,
-                ["handbook"] = new JObject { ["exclude"] = true },
-            });
+                ["skillbooksstats:sourceMod"] = StatBookSourceMod.Resolve(api, discovered.SourceDomain),
+            };
+            if (config.HideFromHandbook) { attributes["handbook"] = new JObject { ["exclude"] = true }; }
+            item.Attributes = new JsonObject(attributes);
 
             api.RegisterItem(item);
         }
 
-        private static void RegisterIllegibleBook(ICoreServerAPI api, string traitCode)
+        private static void RegisterIllegibleBook(ICoreServerAPI api, string traitCode, StatBooksConfig config)
         {
             Item item = BuildBaseItem(api, traitCode, IllegibleTexturePath);
-            item.Attributes = new JsonObject(new JObject
+            JObject attributes = new JObject
             {
                 ["skillbooksstats:traitCode"] = traitCode,
                 ["skillbooksstats:illegible"] = true,
-                ["handbook"] = new JObject { ["exclude"] = true },
-            });
+            };
+            if (config.HideFromHandbook) { attributes["handbook"] = new JObject { ["exclude"] = true }; }
+            item.Attributes = new JsonObject(attributes);
 
             api.RegisterItem(item);
         }
@@ -146,6 +149,49 @@ namespace Skillbooks.Stats
             };
 
             return item;
+        }
+
+        /// <summary>
+        /// A FlavourOverrides entry overrides everything else, for that trait code -- checked
+        /// here, above ResolveFlavour's own chain. With core installed, this latches onto
+        /// core's own skillbooks.json FlavourOverrides instead of Stats' own
+        /// skillbooksstats.json copy: one config file for an admin to manage overrides in
+        /// regardless of which mod actually owns a given trait code, rather than two
+        /// independent override lists that could quietly drift or duplicate each other.
+        /// Stats' own FlavourOverrides only ever applies in standalone mode.
+        /// </summary>
+        private static (string title, string blurb) ResolveFlavourWithOverride(ICoreServerAPI api, string traitCode, DiscoveredStatTrait discovered, StatBooksConfig config, bool coreEnabled)
+        {
+            (string title, string blurb) resolved = ResolveFlavour(api, traitCode, discovered, coreEnabled);
+
+            (string title, string blurb)? over = coreEnabled
+                ? TryGetCoreFlavourOverride(api, traitCode)
+                : TryGetOwnFlavourOverride(config, traitCode);
+            if (over == null) { return resolved; }
+
+            StatBookFlavour.FlavourText filled = StatBookFlavour.FillGaps(
+                new StatBookFlavour.FlavourText { Title = over.Value.title, Blurb = over.Value.blurb },
+                new StatBookFlavour.FlavourText { Title = resolved.title, Blurb = resolved.blurb });
+            return (filled.Title, filled.Blurb);
+        }
+
+        private static (string title, string blurb)? TryGetOwnFlavourOverride(StatBooksConfig config, string traitCode)
+        {
+            if (!config.FlavourOverrides.TryGetValue(traitCode, out StatBooksConfig.FlavourOverride over)) { return null; }
+            return (over.Title, over.Blurb);
+        }
+
+        /// <summary>
+        /// Isolated in its own method, only called after the caller has already confirmed core
+        /// is installed -- same JIT-safety reasoning as ResolveFlavourViaCore below: a
+        /// Skillbooks.* type reference here would crash mod loading with core absent if this
+        /// weren't split out from the method that also runs in standalone mode.
+        /// </summary>
+        private static (string title, string blurb)? TryGetCoreFlavourOverride(ICoreServerAPI api, string traitCode)
+        {
+            Skillbooks.SkillBooksModSystem core = api.ModLoader.GetModSystem<Skillbooks.SkillBooksModSystem>();
+            if (!core.Config.FlavourOverrides.TryGetValue(traitCode, out Skillbooks.Config.SkillBooksConfig.FlavourOverride over)) { return null; }
+            return (over.Title, over.Blurb);
         }
 
         /// <summary>

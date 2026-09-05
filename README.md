@@ -23,6 +23,15 @@ neither ever forces the other to exist.
   reward, so a curse showing up in that same pool would be a mismatch most players won't
   expect, though the tooltip always shows the real trait before you commit to reading.
 - **Vessel loot and trader offers**, mirroring core's mechanisms.
+- **Source attribution.** Each book's tooltip names which mod its trait came from (or "Vintage
+  Story" for a base-game trait), so a modded trait's origin is never a mystery.
+- **Handbook entries.** Books show up in the handbook like any other item by default; hideable
+  via config for anyone who wants "which traits have books" to stay a surprise.
+- **Admin commands.** `/skillbooksstats cleartraits` lets a player give back what they've
+  learned so it can be relearned, and admins can do the same for a specific player or the
+  whole server. Only registered in standalone mode -- core's own identical
+  `/skillbooks cleartraits` already covers stat book traits too once core is installed, since
+  both mods share the same underlying trait-history attribute.
 
 ## Installation
 
@@ -36,7 +45,48 @@ crafting-trait books.
 ## Configuration
 
 A config file is generated on first run at `ModConfig/skillbooksstats.json`. See the file
-itself for the full set of options.
+itself for the full set of options, including `HideFromHandbook` if you'd rather books not
+show up there.
+
+## Commands
+
+- `/skillbooksstats cleartraits` — clears the traits you've learned from stat books so they can
+  be learned again. Requires at least the default **Creative Player** role's privilege level
+  (or a custom role of equivalent level).
+- `/skillbooksstats cleartraits player <name>` — same, for a named online player. Requires at
+  least the default **Survival Moderator** role's privilege level.
+- `/skillbooksstats cleartraits all` — clears learned stat book traits for every online player.
+  Same requirement as `player`.
+
+These check the caller's role's privilege *level*, not one specific privilege — any role at or
+above the threshold qualifies, including custom roles. Only registered when core isn't
+installed — with core present, use its `/skillbooks cleartraits` instead, which already covers
+traits from both mods (they share the same trait-history attribute under the hood). Offline
+players aren't reachable; they need to be online for their traits to be cleared.
+
+## For server admins: overriding a book's flavour text
+
+**With Skillbooks core installed**, add entries to core's own `FlavourOverrides` in
+`skillbooks.json` — Stats latches onto core's copy instead of keeping its own, so there's one
+config file to manage overrides in regardless of whether a given trait code's book actually
+came from core or Stats. See [core's README](https://github.com/soundbyter/skillbooks-core#for-server-admins-overriding-a-books-flavour-text)
+for the format.
+
+**Standalone (core not installed)**, add entries to `FlavourOverrides` in
+`skillbooksstats.json` instead, keyed by trait code:
+
+```json
+"FlavourOverrides": {
+  "fleetfooted": {
+    "title": "Your Own Title",
+    "blurb": "Your own in-world description."
+  }
+}
+```
+
+Either way, this overrides everything else for that trait code — mod-supplied overrides, the
+curated list, and the procedural fallback. Either field can be omitted and falls back to
+whatever the next tier would have provided.
 
 ## For mod authors: supplying your own flavour text
 
@@ -53,7 +103,8 @@ domain, so it has to sit under a recognized one):
 ```
 
 This is checked first regardless of whether Skillbooks core is also installed — one file
-covers both modes, no need to duplicate it under core's own path.
+covers both modes, no need to duplicate it under core's own path. A server admin's own
+`FlavourOverrides` (above) still wins over this.
 
 ## Building from source
 

@@ -63,7 +63,12 @@ namespace Skillbooks.Stats
             return curatedCache.TryGetValue(traitCode, out FlavourText text) ? text : null;
         }
 
-        private static FlavourText FillGaps(FlavourText text, FlavourText fallback)
+        /// <summary>
+        /// Public so StatBookRegistry can fill gaps in a config override with whatever the
+        /// rest of the chain would have provided, the same "fill independently per field"
+        /// behavior every other tier already gets.
+        /// </summary>
+        public static FlavourText FillGaps(FlavourText text, FlavourText fallback)
         {
             return new FlavourText
             {

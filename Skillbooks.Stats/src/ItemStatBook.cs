@@ -64,14 +64,22 @@ namespace Skillbooks.Stats
             if (IsIllegible)
             {
                 dsc.AppendLine(Lang.Get("skillbooksstats:illegible-blurb"));
-                return;
             }
-            string blurb = Attributes?["skillbooksstats:blurb"].AsString();
-            if (!string.IsNullOrEmpty(blurb))
+            else
             {
-                dsc.AppendLine(blurb);
+                string blurb = Attributes?["skillbooksstats:blurb"].AsString();
+                if (!string.IsNullOrEmpty(blurb))
+                {
+                    dsc.AppendLine(blurb);
+                }
+                AppendTraitSummary(dsc);
             }
-            AppendTraitSummary(dsc);
+
+            // The handbook's search index is built from an item's name plus its full
+            // GetDescription() output (see core's ItemSkillBook.GetHeldItemInfo for the
+            // decompile-confirmed mechanism) -- this line's only purpose is making these books
+            // findable by searching "skillbooks" there.
+            dsc.AppendLine(Lang.Get("skillbooksstats:tooltip-series"));
         }
 
         /// <summary>
@@ -96,6 +104,12 @@ namespace Skillbooks.Stats
             if (!string.IsNullOrEmpty(attrText))
             {
                 dsc.AppendLine(attrText);
+            }
+
+            string sourceMod = Attributes?["skillbooksstats:sourceMod"].AsString();
+            if (!string.IsNullOrEmpty(sourceMod))
+            {
+                dsc.AppendLine(Lang.Get("skillbooksstats:tooltip-source", sourceMod));
             }
         }
 
@@ -205,6 +219,35 @@ namespace Skillbooks.Stats
         }
 
         /// <summary>
+        /// Strips every trait ever granted by a stat book (skillbooksLearnedTraits) back out
+        /// of extraTraits and clears the history itself, so a fresh book grants the same trait
+        /// again rather than being silently rejected as already-known. Used by
+        /// "/skillbooksstats cleartraits" -- only registered standalone (see
+        /// StatBookCommands), since core's own identical command already covers this shared,
+        /// unprefixed watched attribute when core is installed. Returns how many trait codes
+        /// were cleared, so callers can report it back to whoever ran the command. Mirrors
+        /// core's ItemSkillBook.ClearLearnedTraits.
+        /// </summary>
+        internal static int ClearLearnedTraits(ICoreAPI api, EntityAgent byEntity)
+        {
+            string[] learned = byEntity.WatchedAttributes.GetStringArray("skillbooksLearnedTraits", System.Array.Empty<string>());
+            if (learned.Length == 0) { return 0; }
+
+            HashSet<string> learnedSet = new HashSet<string>(learned);
+            string[] active = byEntity.WatchedAttributes.GetStringArray("extraTraits", System.Array.Empty<string>());
+            string[] remaining = active.Where(code => !learnedSet.Contains(code)).ToArray();
+
+            byEntity.WatchedAttributes.SetStringArray("extraTraits", remaining);
+            byEntity.WatchedAttributes.MarkPathDirty("extraTraits");
+            byEntity.WatchedAttributes.SetStringArray("skillbooksLearnedTraits", System.Array.Empty<string>());
+            byEntity.WatchedAttributes.MarkPathDirty("skillbooksLearnedTraits");
+
+            RefreshTraitStats(api, byEntity);
+
+            return learned.Length;
+        }
+
+        /// <summary>
         /// Internal rather than private: StatBookCharSelPatcher reuses this after restoring
         /// extraTraits post-charsel, same need for the same reason.
         /// </summary>
@@ -244,13 +287,19 @@ namespace Skillbooks.Stats
 
             Item chosen = candidates[api.World.Rand.Next(candidates.Count)];
 
+            // Give the new book *before* clearing bookSlot -- see core's ItemSkillBook.Reroll
+            // for the full reasoning (log-evidence-based: a still-held interaction appears to
+            // carry its already-elapsed timer onto whatever refills the just-emptied active
+            // slot, instantly completing a read on the new book instead of leaving it unread).
+            ItemStack resultStack = new ItemStack(chosen);
+            bool given = player.InventoryManager.TryGiveItemstack(resultStack);
+
             offhandSlot.TakeOut(1);
             offhandSlot.MarkDirty();
             bookSlot.TakeOut(1);
             bookSlot.MarkDirty();
 
-            ItemStack resultStack = new ItemStack(chosen);
-            if (!player.InventoryManager.TryGiveItemstack(resultStack))
+            if (!given)
             {
                 api.World.SpawnItemEntity(resultStack, GetEntityPosXyz(player.Entity));
             }
