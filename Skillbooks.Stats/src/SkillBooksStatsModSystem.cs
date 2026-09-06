@@ -53,11 +53,23 @@ namespace Skillbooks.Stats
         /// Isolated in its own method, only called after IsModEnabled has already confirmed
         /// core is present -- see StatBookRegistry.ResolveFlavourViaCore for why referencing
         /// core's types must stay isolated like this rather than being inlined here.
+        ///
+        /// Runs core's own discovery logic directly rather than reading core.CraftingTraits
+        /// off its live ModSystem instance -- that property is only populated inside core's
+        /// own AssetsFinalize, and mod load order does not guarantee that runs before Stats'
+        /// (confirmed via a real crash report showing "skillbooksstats" loading before
+        /// "skillbooks" with a large enough mod list). Unlike Config (a plain property with no
+        /// default, so reading it early is a NullReferenceException), CraftingTraits defaults
+        /// to an empty dictionary -- so this wouldn't crash, but would silently exclude
+        /// nothing, letting a trait core already covers as a crafting-trait book also get a
+        /// redundant stat book. TraitDiscovery.Run is a pure, side-effect-free scan of already-
+        /// loaded recipes and traits.json; safe to run again here even though core will also
+        /// run it again itself moments later.
         /// </summary>
         private static HashSet<string> GetCoreCraftingTraitCodes(ICoreServerAPI sapi)
         {
-            Skillbooks.SkillBooksModSystem core = sapi.ModLoader.GetModSystem<Skillbooks.SkillBooksModSystem>();
-            return new HashSet<string>(core.CraftingTraits.Keys);
+            Skillbooks.Config.SkillBooksConfig coreConfig = Skillbooks.Config.SkillBooksConfig.Load(sapi);
+            return new HashSet<string>(Skillbooks.TraitDiscovery.Run(sapi, coreConfig).Keys);
         }
     }
 }

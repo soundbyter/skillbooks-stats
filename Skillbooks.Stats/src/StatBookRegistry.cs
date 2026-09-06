@@ -186,11 +186,24 @@ namespace Skillbooks.Stats
         /// is installed -- same JIT-safety reasoning as ResolveFlavourViaCore below: a
         /// Skillbooks.* type reference here would crash mod loading with core absent if this
         /// weren't split out from the method that also runs in standalone mode.
+        ///
+        /// Loads core's config directly (the same static loader core's own AssetsFinalize
+        /// uses) rather than reading it off core's live SkillBooksModSystem instance --
+        /// confirmed via a real crash report that mod load order isn't guaranteed to run
+        /// core's AssetsFinalize before Stats' own: with a large enough mod list, the
+        /// dependency-topology sort can place "skillbooksstats" before "skillbooks" even
+        /// though nothing here declares a hard dependency forcing otherwise (deliberately not
+        /// declared, since Stats needs to load and run fine with core entirely absent). When
+        /// that happens, core.Config is still null (only ever set inside core's own
+        /// AssetsFinalize, no default), and core.Config.FlavourOverrides threw
+        /// NullReferenceException for every single trait. Loading the config file directly
+        /// sidesteps that race entirely -- it's a cheap, side-effect-free file read no matter
+        /// how many times it's called, and core will happily load the same file again itself.
         /// </summary>
         private static (string title, string blurb)? TryGetCoreFlavourOverride(ICoreServerAPI api, string traitCode)
         {
-            Skillbooks.SkillBooksModSystem core = api.ModLoader.GetModSystem<Skillbooks.SkillBooksModSystem>();
-            if (!core.Config.FlavourOverrides.TryGetValue(traitCode, out Skillbooks.Config.SkillBooksConfig.FlavourOverride over)) { return null; }
+            Skillbooks.Config.SkillBooksConfig coreConfig = Skillbooks.Config.SkillBooksConfig.Load(api);
+            if (!coreConfig.FlavourOverrides.TryGetValue(traitCode, out Skillbooks.Config.SkillBooksConfig.FlavourOverride over)) { return null; }
             return (over.Title, over.Blurb);
         }
 
