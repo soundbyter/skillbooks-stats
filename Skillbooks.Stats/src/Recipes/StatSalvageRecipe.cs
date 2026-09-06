@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using Skillbooks.Stats.Config;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
+using Vintagestory.API.Util;
 
 namespace Skillbooks.Stats.Recipes
 {
@@ -18,6 +19,14 @@ namespace Skillbooks.Stats.Recipes
         public static void Register(ICoreServerAPI api, StatBooksConfig config)
         {
             if (!config.SalvageEnabled) { return; }
+
+            // A wildcard-ingredient GridRecipe with zero matching items crashes the vanilla
+            // handbook the moment a player opens ANY item's detail page -- see core's
+            // Recipes.SalvageRecipe for the full reasoning (confirmed from a real crash
+            // report against that identical pattern). Reachable whenever this world has zero
+            // stat book items: e.g. every discovered stat trait is negative and
+            // IncludeNegativeTraits is false. Nothing to salvage into either way.
+            if (!AnyStatBooksRegistered(api)) { return; }
 
             GridRecipe recipe = Build(api, config);
             if (recipe == null) { return; }
@@ -48,6 +57,16 @@ namespace Skillbooks.Stats.Recipes
             }
 
             api.Logger.Notification("[Skillbooks: Stats] Salvage recipe registered.");
+        }
+
+        private static bool AnyStatBooksRegistered(ICoreServerAPI api)
+        {
+            AssetLocation pattern = new AssetLocation("skillbooksstats", "statbook-*");
+            foreach (CollectibleObject collectible in api.World.Collectibles)
+            {
+                if (collectible.Code != null && WildcardUtil.Match(pattern, collectible.Code)) { return true; }
+            }
+            return false;
         }
 
         private static GridRecipe Build(ICoreServerAPI api, StatBooksConfig config)
