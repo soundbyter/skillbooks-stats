@@ -1,10 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
 using Skillbooks.Stats.Config;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
-using Vintagestory.API.Util;
 
 namespace Skillbooks.Stats.Recipes
 {
@@ -16,7 +16,7 @@ namespace Skillbooks.Stats.Recipes
     /// </summary>
     public static class StatSalvageRecipe
     {
-        public static void Register(ICoreServerAPI api, StatBooksConfig config)
+        public static void Register(ICoreServerAPI api, Dictionary<string, Skillbooks.Stats.DiscoveredStatTrait> statTraits, HashSet<string> knownTraitCodes, StatBooksConfig config)
         {
             if (!config.SalvageEnabled) { return; }
 
@@ -26,7 +26,14 @@ namespace Skillbooks.Stats.Recipes
             // report against that identical pattern). Reachable whenever this world has zero
             // stat book items: e.g. every discovered stat trait is negative and
             // IncludeNegativeTraits is false. Nothing to salvage into either way.
-            if (!AnyStatBooksRegistered(api)) { return; }
+            //
+            // Must be decided from statTraits/knownTraitCodes directly, NOT by querying
+            // api.World.Collectibles -- see core's Recipes.SalvageRecipe for the decompile-
+            // confirmed reason (Collectibles is a snapshot taken before AssetsFinalize even
+            // starts, so it never reflects items this same AssetsFinalize call registers).
+            // A Collectibles-based check here regressed the recipe entirely, in every case,
+            // caught before it shipped as a real release.
+            if (!AnyStatBookWillBeRegistered(statTraits, knownTraitCodes, config)) { return; }
 
             GridRecipe recipe = Build(api, config);
             if (recipe == null) { return; }
@@ -59,13 +66,20 @@ namespace Skillbooks.Stats.Recipes
             api.Logger.Notification("[Skillbooks: Stats] Salvage recipe registered.");
         }
 
-        private static bool AnyStatBooksRegistered(ICoreServerAPI api)
+        /// <summary>
+        /// Mirrors StatBookRegistry.Generate's own logic for whether it registers at least
+        /// one real or illegible book, without re-deriving anything from the world's item
+        /// registry (see the caller for why that would be unreliable here).
+        /// </summary>
+        private static bool AnyStatBookWillBeRegistered(Dictionary<string, Skillbooks.Stats.DiscoveredStatTrait> statTraits, HashSet<string> knownTraitCodes, StatBooksConfig config)
         {
-            AssetLocation pattern = new AssetLocation("skillbooksstats", "statbook-*");
-            foreach (CollectibleObject collectible in api.World.Collectibles)
+            if (statTraits.Count > 0) { return true; }
+
+            foreach (string traitCode in knownTraitCodes)
             {
-                if (collectible.Code != null && WildcardUtil.Match(pattern, collectible.Code)) { return true; }
+                if (!statTraits.ContainsKey(traitCode) && config.IsTraitEnabled(traitCode)) { return true; }
             }
+
             return false;
         }
 
