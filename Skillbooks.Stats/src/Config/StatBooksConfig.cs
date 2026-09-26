@@ -8,7 +8,20 @@ namespace Skillbooks.Stats.Config
     /// </summary>
     public class StatBooksConfig
     {
-        public string[] TraitBlacklist = System.Array.Empty<string>();
+        /// <summary>
+        /// Bumped whenever a release needs to change an existing config file on load (see
+        /// Migrate). Defaults to 0 so a file written before this field existed reads as
+        /// version 0; freshly created configs are stamped with CurrentConfigVersion instead.
+        /// </summary>
+        public int ConfigVersion = 0;
+
+        /// <summary>
+        /// Ships with DefaultExcludedTraits. Newtonsoft replaces arrays wholesale on load, so
+        /// a saved list -- even an empty one -- wins over this default; older files get the
+        /// defaults added once through Migrate instead, and anything removed afterwards
+        /// stays removed.
+        /// </summary>
+        public string[] TraitBlacklist = (string[])DefaultExcludedTraits.Clone();
         public string[] TraitAllowlist = System.Array.Empty<string>();
 
         /// <summary>
@@ -86,11 +99,44 @@ namespace Skillbooks.Stats.Config
 
         private const string FileName = "skillbooksstats.json";
 
+        private const int CurrentConfigVersion = 1;
+
+        /// <summary>
+        /// Traits that exist in some mod's traits.json but no player is meant to have.
+        /// "test" is Aldi's Classes' leftover dev trait (+10000% to several stats, granted
+        /// by no class).
+        /// </summary>
+        private static readonly string[] DefaultExcludedTraits = { "test" };
+
         public static StatBooksConfig Load(ICoreServerAPI api)
         {
-            StatBooksConfig config = api.LoadModConfig<StatBooksConfig>(FileName) ?? new StatBooksConfig();
+            StatBooksConfig config = api.LoadModConfig<StatBooksConfig>(FileName);
+            if (config == null)
+            {
+                config = new StatBooksConfig { ConfigVersion = CurrentConfigVersion };
+            }
+            else
+            {
+                Migrate(config);
+            }
             api.StoreModConfig(config, FileName);
             return config;
+        }
+
+        private static void Migrate(StatBooksConfig config)
+        {
+            if (config.ConfigVersion < 1)
+            {
+                // Pre-versioning files saved TraitBlacklist, usually as [], which would
+                // otherwise override the new default exclusions forever.
+                List<string> blacklist = new List<string>(config.TraitBlacklist ?? System.Array.Empty<string>());
+                foreach (string traitCode in DefaultExcludedTraits)
+                {
+                    if (!blacklist.Contains(traitCode)) { blacklist.Add(traitCode); }
+                }
+                config.TraitBlacklist = blacklist.ToArray();
+            }
+            config.ConfigVersion = CurrentConfigVersion;
         }
 
         public bool IsTraitEnabled(string traitCode)
